@@ -1,4 +1,4 @@
-import { renderPlayerBarHTML, audio, currentSongId } from "../components/Player";
+import { renderPlayerBarHTML, audio } from "../components/Player";
 
 const API_BASE_URL = "https://youtube-music.f8team.dev/api";
 
@@ -11,7 +11,7 @@ function formatTime(time) {
 }
 
 export const SongDetailPageHTML = () => `
-    <div id="song-detail-page" class="p-8 pb-32 text-white flex flex-col md:flex-row gap-8 animate-fade-in relative min-h-screen">
+    <div id="song-detail-page" class="p-8 pb-32 text-white flex flex-col md:flex-row gap-8 relative min-h-screen">
         <div class="w-full md:w-[350px] flex-shrink-0 flex flex-col items-center md:items-start text-center md:text-left md:sticky md:top-24 h-fit">
             <div class="w-[280px] h-[280px] shadow-2xl mb-6">
                 <img id="detail-thumb" src="" class="w-full h-full object-cover rounded-lg">
@@ -21,7 +21,7 @@ export const SongDetailPageHTML = () => `
         </div>
 
         <div class="flex-1 min-w-0">
-             <h3 class="text-white font-bold mb-4 uppercase text-sm tracking-wider">Danh sách bài hát/video</h3>
+             <p class="text-white mb-4 text-2xl">video/song list</p>
              <table class="w-full text-left border-collapse">
                 <tbody id="detail-tracks"></tbody>
              </table>
@@ -36,6 +36,8 @@ export const initSongDetailLogic = async (initialId) => {
     const pageTitle = document.getElementById("detail-title");
     const pageArtist = document.getElementById("detail-artist");
     const listContainer = document.getElementById("detail-tracks");
+    
+    // Player Elements
     const barThumb = document.getElementById("bar-thumb");
     const barTitle = document.getElementById("bar-title");
     const barArtist = document.getElementById("bar-artist");
@@ -43,10 +45,25 @@ export const initSongDetailLogic = async (initialId) => {
     const playIcon = playBtn.querySelector("i");
     const progressContainer = document.getElementById("bar-progress-container");
     const progressBar = document.getElementById("bar-progress-bar");
+    const progressDot = document.getElementById("bar-progress-dot");
     const currentTimeEl = document.getElementById("bar-current-time");
     const durationEl = document.getElementById("bar-duration");
+    const nextBtn = document.getElementById("bar-next-btn");
+    const prevBtn = document.getElementById("bar-prev-btn");
+    const repeatBtn = document.getElementById("bar-repeat-btn");
 
     let isDragging = false;
+    let playlist = [];
+    let isRepeat = false;
+    let currentId = initialId;
+
+    //chuyển bài
+    const changeSong = (id) => {
+        if (!id) return;
+        currentId = id;
+        window.history.pushState({ page: "song", id: id }, "", `?page=song&id=${id}`);
+        loadAndPlaySong(id);
+    };
 
     const loadAndPlaySong = async (id) => {
         try {
@@ -56,7 +73,7 @@ export const initSongDetailLogic = async (initialId) => {
             //cột trái
             const title = data.title;
             const artist = Array.isArray(data.artists) ? data.artists.join(", ") : "null";
-            const thumb = data.thumbnails?.[0] || "https://via.placeholder.com/300";
+            const thumb = data.thumbnails?.[0];
 
             pageTitle.innerText = title;
             pageArtist.innerText = artist;
@@ -67,22 +84,31 @@ export const initSongDetailLogic = async (initialId) => {
             barThumb.src = thumb;
 
             //cột phải( danh sách)
-            //lấy album tracks, nếu không có thì lấy playlist tracks
             let tracks = [];
             if (data.album && data.album.tracks) {
                 tracks = data.album.tracks;
             } else if (data.playlists && data.playlists[0] && data.playlists[0].tracks) {
                 tracks = data.playlists[0].tracks;
             }
-            renderTracks(tracks, id);
+            
+            if (tracks.length > 0) playlist = tracks;
+            
+            renderTracks(playlist, id);
 
             //phần audio
             if (audio.src !== data.audioUrl) {
                 audio.src = data.audioUrl;
-                try { await audio.play(); } catch(e) { console.error(e); }
+                try { 
+                    await audio.play(); 
+                } catch(e) { 
+                    updatePlayIcon(); 
+                }
             } else if (audio.paused) {
-                audio.play();
+                try { await audio.play(); } catch(e) {}
             }
+            
+            // Giữ trạng thái repeat
+            audio.loop = isRepeat;
             updatePlayIcon();
 
         } catch (error) {
@@ -123,13 +149,7 @@ export const initSongDetailLogic = async (initialId) => {
         document.querySelectorAll(".js-play-item").forEach(row => {
             row.onclick = (e) => {
                 e.preventDefault();
-                const newId = row.dataset.id;
-                
-                //cập nhật URL
-                window.history.pushState({ page: "song", id: newId }, "", `?page=song&id=${newId}`);
-                
-                //load bài mới
-                loadAndPlaySong(newId);
+                changeSong(row.dataset.id);
             };
         });
     };
@@ -142,19 +162,65 @@ export const initSongDetailLogic = async (initialId) => {
         }
     };
 
+    //next
+    const handleNext = () => {
+        if (playlist.length === 0) return;
+        let idx = playlist.findIndex(t => t.id === currentId);
+        let nextIdx = idx + 1;
+        if (nextIdx >= playlist.length) nextIdx = 0; //lặp về thằng đầu
+        changeSong(playlist[nextIdx].id);
+    };
+
+    //back
+    const handlePrev = () => {
+        if (playlist.length === 0) return;
+        let idx = playlist.findIndex(t => t.id === currentId);
+        let prevIdx = idx - 1;
+        if (prevIdx < 0) prevIdx = playlist.length - 1; //lặp veeg thằng cuối
+        changeSong(playlist[prevIdx].id);
+    };
+
     playBtn.onclick = () => {
         if (audio.paused) audio.play();
         else audio.pause();
         updatePlayIcon();
     };
 
+    nextBtn.onclick = handleNext;
+    prevBtn.onclick = handlePrev;
+
+    repeatBtn.onclick = () => {
+        isRepeat = !isRepeat;
+        audio.loop = isRepeat;
+        if (isRepeat) {
+            repeatBtn.classList.remove("text-gray-400");
+            repeatBtn.classList.add("text-red-500");
+        } else {
+            repeatBtn.classList.add("text-gray-400");
+            repeatBtn.classList.remove("text-red-500");
+        }
+    };
+
     audio.onplay = updatePlayIcon;
     audio.onpause = updatePlayIcon;
 
+    //auto next
+    audio.onended = () => {
+        if (!isRepeat) {
+            handleNext();
+        }
+    };
+
     audio.ontimeupdate = () => {
-        if (!isDragging) {
+        if (!isDragging && audio.duration) {
             const percent = (audio.currentTime / audio.duration) * 100 || 0;
             progressBar.style.width = `${percent}%`;
+            
+            if (progressDot) {
+                progressDot.style.left = `${percent}%`; 
+                progressDot.style.opacity = 1;
+            }
+            
             currentTimeEl.innerText = formatTime(audio.currentTime);
             durationEl.innerText = formatTime(audio.duration);
         }
@@ -162,9 +228,11 @@ export const initSongDetailLogic = async (initialId) => {
 
     //tua nhạc
     progressContainer.onclick = (e) => {
-        const rect = progressContainer.getBoundingClientRect();
-        const percent = (e.clientX - rect.left) / rect.width;
-        audio.currentTime = percent * audio.duration;
+        if (audio.duration && isFinite(audio.duration)) {
+            const rect = progressContainer.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audio.currentTime = percent * audio.duration;
+        }
     };
 
     await loadAndPlaySong(initialId);

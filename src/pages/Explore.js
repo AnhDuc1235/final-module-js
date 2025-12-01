@@ -166,7 +166,7 @@ function initVideoSlider() {
 
 function Explore(user) {
   return `
-    <div class="main-layout-wrapper flex flex-col min-h-screen bg-black">
+    <div class="main-layout-wrapper flex flex-col min-h-screen bg-black mt-[50px]">
       <div class="top-section flex flex-grow overflow-hidden">
         <div class="sidebar w-[250px] flex-shrink-0 hidden md:block">
           ${Sidebar()}

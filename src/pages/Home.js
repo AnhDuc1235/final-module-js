@@ -180,7 +180,7 @@ function renderSectionSlider(title, items, defaultType, sliderId) {
 
 function Home(user) {
     return `
-    <div class="flex bg-black min-h-screen font-sans">
+    <div class="flex bg-black min-h-screen font-sans mt-[50px]">
       <div class="hidden md:block w-[240px] flex-shrink-0" id="sidebar-container">${Sidebar()}</div>
       <div class="flex-1 flex flex-col w-full min-w-0">
         ${Header(user)}

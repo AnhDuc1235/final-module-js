@@ -23,9 +23,10 @@ export const DetailPageHTML = () => `
         </div>
 
         <div class="flex-1 min-w-0">
-             <table class="w-full text-left border-collapse">
+            <p class="text-2xl pb-[10px] ml-4">Playlists/albums</p>
+            <table class="w-full text-left border-collapse">
                 <tbody id="detail-tracks"></tbody>
-             </table>
+            </table>
         </div>
     </div>
 `;
@@ -34,7 +35,7 @@ export const initDetailLogic = async (param, type) => {
     const root = document.getElementById("detail-page");
     if (!root) return;
 
-    // Tìm endpoint là album hay playlisr
+    //tìm endpoint là album hay playlist
     const endpoint = type === "album" ? `/albums/details/${param}` : `/playlists/details/${param}`;
 
     try {
@@ -69,7 +70,6 @@ export const initDetailLogic = async (param, type) => {
                 <tr class="group hover:bg-[#2a2a2a] rounded-md transition-colors cursor-pointer js-navigate-song" data-id="${id}">
                     <td class="p-3 text-gray-400 w-10 text-center rounded-l-md group-hover:text-white">
                         <span class="group-hover:hidden">${index + 1}</span>
-                        <i class="fas fa-play text-white hidden group-hover:inline"></i>
                     </td>
                     <td class="p-3">
                         <div class="flex items-center gap-4">

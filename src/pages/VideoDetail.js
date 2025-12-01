@@ -5,6 +5,9 @@ const API_BASE_URL = "https://youtube-music.f8team.dev/api";
 let player = null;
 let timeInterval = null;
 let isDragging = false;
+let isRepeat = false;
+let relatedList = [];
+let currentIndex = -1;
 
 function loadYouTubeAPI() {
     return new Promise((resolve) => {
@@ -40,7 +43,7 @@ export const VideoDetailPageHTML = () => `
         </div>
 
         <div class="flex-1 min-w-0">
-             <h3 class="text-white font-bold mb-4 uppercase text-sm tracking-wider">Related Videos</h3>
+             <p class="text-white mb-4 ml-3.5 text-2xl">Related Videos</p>
              <div class="overflow-y-auto max-h-[calc(100vh-200px)] scrollbar-thin">
                  <table class="w-full text-left border-collapse">
                     <tbody id="video-related-tracks"></tbody>
@@ -55,11 +58,21 @@ export const VideoDetailPageHTML = () => `
 export const initVideoDetailLogic = async (id) => {
     //cleanup player cũ
     if (player) {
-        try { if (player.destroy) player.destroy(); } catch (e) {}
+        try { if (typeof player.destroy === 'function') player.destroy(); } catch (e) {}
         player = null;
     }
-    if (timeInterval) clearInterval(timeInterval);
+    if (timeInterval) {
+        clearInterval(timeInterval);
+        timeInterval = null;
+    }
     window.scrollTo(0, 0);
+
+    //Sửa lỗi Back: Lắng nghe khi người dùng bấm Back trình duyệt
+    window.onpopstate = (event) => {
+        if (event.state && event.state.page === "video" && event.state.id) {
+            initVideoDetailLogic(event.state.id);
+        }
+    };
 
     const titleEl = document.getElementById("video-title");
     const descEl = document.getElementById("video-desc");
@@ -68,11 +81,15 @@ export const initVideoDetailLogic = async (id) => {
     const barArtist = document.getElementById("bar-artist");
     const barThumb = document.getElementById("bar-thumb");
     const progressBar = document.getElementById("bar-progress-bar");
+    const progressDot = document.getElementById("bar-progress-dot");
     const currentTimeEl = document.getElementById("bar-current-time");
     const durationEl = document.getElementById("bar-duration");
     const playBtn = document.getElementById("bar-play-btn");
     const playIcon = playBtn ? playBtn.querySelector("i") : null;
     const progressContainer = document.getElementById("bar-progress-container");
+    const nextBtn = document.getElementById("bar-next-btn");
+    const prevBtn = document.getElementById("bar-prev-btn");
+    const repeatBtn = document.getElementById("bar-repeat-btn");
 
     let embedContainer = document.getElementById('video-embed');
     if (!embedContainer) {
@@ -91,6 +108,9 @@ export const initVideoDetailLogic = async (id) => {
     try {
         const res = await fetch(`${API_BASE_URL}/videos/details/${id}`);
         const data = await res.json();
+        
+        relatedList = data.related || [];
+        currentIndex = relatedList.findIndex(v => v.id === id);
 
         if(titleEl) titleEl.innerText = data.title;
         if(descEl) descEl.innerText = `Popularity: ${data.popularity}`;
@@ -99,7 +119,7 @@ export const initVideoDetailLogic = async (id) => {
         if(barThumb && data.thumbnails && data.thumbnails.length > 0) {
             barThumb.src = data.thumbnails[0];
         }
-        if (listContainer) renderList(data.related || []);
+        if (listContainer) renderList(relatedList, id);
 
         await loadYouTubeAPI();
         
@@ -113,7 +133,7 @@ export const initVideoDetailLogic = async (id) => {
                 'rel': 0, 
                 'showinfo': 0,
                 'enablejsapi': 1,
-                'origin': window.location.origin
+                // 'origin': window.location.origin
             },
             events: {
                 'onReady': onPlayerReady,
@@ -125,10 +145,31 @@ export const initVideoDetailLogic = async (id) => {
         console.error("Lỗi tải video:", error);
     }
     
+    //next 
+    function handleNextVideo() {
+        if (!relatedList || relatedList.length === 0) return;
+        currentIndex = (currentIndex + 1) >= relatedList.length ? 0 : (currentIndex + 1);
+        const nextId = relatedList[currentIndex].id;
+        changeVideo(nextId);
+    }
+    //back
+    function handlePrevVideo() {
+        if (!relatedList || relatedList.length === 0) return;
+        currentIndex = (currentIndex - 1) < 0 ? relatedList.length - 1 : (currentIndex - 1);
+        const prevId = relatedList[currentIndex].id;
+        changeVideo(prevId);
+    }
+
+    function changeVideo(newId) {
+        if (!newId) return;
+        window.history.pushState({ page: "video", id: newId }, "", `?page=video&id=${newId}`);
+        initVideoDetailLogic(newId);
+    }
+
     //render list
-    function renderList(items) {
+    function renderList(items, activeId) {
         listContainer.innerHTML = items.map((item, index) => `
-            <tr class="group hover:bg-[#2a2a2a] rounded-md transition-colors cursor-pointer js-video-item" data-id="${item.id}">
+            <tr class="group hover:bg-[#2a2a2a] rounded-md transition-colors cursor-pointer js-video-item ${item.id === activeId ? 'bg-[#2a2a2a]' : ''}" data-id="${item.id}">
                 <td class="p-3 text-gray-400 w-10 text-center">${index + 1}</td>
                 <td class="p-3 flex gap-4">
                     <img src="${item.thumbnails[0]}" class="w-24 h-14 rounded object-cover">
@@ -141,15 +182,15 @@ export const initVideoDetailLogic = async (id) => {
         listContainer.querySelectorAll(".js-video-item").forEach(row => {
             row.onclick = (e) => {
                 e.preventDefault();
-                const newId = row.dataset.id;
-                window.history.pushState({ page: "video", id: newId }, "", `?page=video&id=${newId}`);
-                initVideoDetailLogic(newId);
+                changeVideo(row.dataset.id);
             };
         });
     }
 
     function onPlayerReady(event) {
-        event.target.playVideo();
+        try {
+            event.target.playVideo();
+        } catch(e) { }
         startProgressLoop();
     }
 
@@ -157,15 +198,23 @@ export const initVideoDetailLogic = async (id) => {
         if (!playIcon) return;
         
         //pause
-        if (event.data === 1) { 
-            playIcon.className = "fas fa-pause text-lg"; 
+        if (event.data === 2) { 
+            playIcon.className = "fas fa-play text-lg ml-1";
             startProgressLoop();
         } 
-        //play
-        else { 
-            playIcon.className = "fas fa-play text-lg ml-1"; 
-            if (event.data !== 3) {
-                if (timeInterval) clearInterval(timeInterval);
+        //playing
+        else if (event.data === 1) {
+             playIcon.className = "fas fa-pause text-lg";
+             startProgressLoop();
+        }
+        //ended (hết bài)
+        else if (event.data === 0) {
+            playIcon.className = "fas fa-play text-lg ml-1";
+            if(isRepeat) {
+                player.seekTo(0);
+                player.playVideo();
+            } else {
+                handleNextVideo();
             }
         }
     }
@@ -177,9 +226,16 @@ export const initVideoDetailLogic = async (id) => {
             try {
                 const current = player.getCurrentTime();
                 const total = player.getDuration();
-                if (total > 0 && progressBar) {
+                
+                if (total > 0 && isFinite(total) && progressBar) {
                     const percent = (current / total) * 100;
                     progressBar.style.width = `${percent}%`;
+                    
+                    if (progressDot) {
+                        progressDot.style.left = `${percent}%`;
+                        progressDot.style.opacity = 1;
+                    }
+
                     if(currentTimeEl) currentTimeEl.innerText = formatTime(current);
                     if(durationEl) durationEl.innerText = formatTime(total);
                 }
@@ -195,13 +251,37 @@ export const initVideoDetailLogic = async (id) => {
             }
         };
     }
+    if(nextBtn) {
+        nextBtn.onclick = handleNextVideo;
+    }
+    if (prevBtn) {
+        prevBtn.onclick = () => {
+            if (relatedList && relatedList.length > 0) {
+                handlePrevVideo();
+            } else {
+                window.history.back(); 
+            }
+        };
+    }
+
+    //lặp
+    if(repeatBtn) {
+        repeatBtn.style.color = isRepeat ? "#ef4444" : "";
+        repeatBtn.onclick = () => {
+            isRepeat = !isRepeat;
+            repeatBtn.style.color = isRepeat ? "#ef4444" : "";
+        };
+    }
     
     if(progressContainer) {
         progressContainer.onclick = (e) => {
             if(!player || typeof player.getDuration !== 'function') return;
-            const rect = progressContainer.getBoundingClientRect();
-            const percent = (e.clientX - rect.left) / rect.width;
-            player.seekTo(percent * player.getDuration(), true);
+            const total = player.getDuration();
+            if (total && isFinite(total)) {
+                const rect = progressContainer.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                player.seekTo(percent * total, true);
+            }
         }
     }
 };
