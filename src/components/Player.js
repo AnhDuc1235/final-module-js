@@ -23,11 +23,11 @@ export const renderPlayerBarHTML = () => {
 
         <div class="w-[30%] flex items-center gap-4 pl-2">
             <div class="flex items-center gap-4">
-                <button id="bar-prev-btn" class="text-gray-400 hover:text-white"><i class="fas fa-step-backward text-xl"></i></button>
-                <button id="bar-play-btn" class="w-10 h-10 rounded-full bg-white flex items-center justify-center hover:scale-105 transition-transform text-black">
+                <button id="bar-prev-btn" class="text-gray-400 hover:text-white"><i class="fas fa-step-backward text-xl cursor-pointer"></i></button>
+                <button id="bar-play-btn" class="w-10 h-10 rounded-full bg-white flex items-center justify-center hover:bg-gray-200 transition-all text-black cursor-pointer">
                     <i class="fas fa-play text-lg ml-1"></i> 
                 </button>
-                <button id="bar-next-btn" class="text-gray-400 hover:text-white"><i class="fas fa-step-forward text-xl"></i></button>
+                <button id="bar-next-btn" class="text-gray-400 hover:text-white"><i class="fas fa-step-forward text-xl cursor-pointer"></i></button>
             </div>
             
             <div class="flex items-center gap-1 text-xs text-gray-400 font-medium ml-2">

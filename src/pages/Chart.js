@@ -7,13 +7,13 @@ export default function ChartPage() {
       <div class="flex flex-col gap-4 mb-8">
         <h1 class="text-white text-5xl font-bold">Charts</h1>
         <div class="relative w-fit z-50">
-            <button id="country-select-btn" class="text-gray-300 font-bold text-xl flex items-center gap-2 hover:text-white transition-colors">
+            <button id="country-select-btn" class="text-gray-300 font-bold text-xl flex items-center gap-2 hover:text-white transition-colors cursor-pointer">
                 <span id="selected-country-name">Global</span>
-                <svg class="w-5 h-5 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                <svg class="w-5 h-5 mb-[3px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
             <div id="country-dropdown" class="absolute top-full left-0 mt-2 w-56 bg-[#282828] rounded-md shadow-xl opacity-0 invisible transition-all duration-200 origin-top-left overflow-hidden border border-gray-700">
                 <div class="p-3 border-b border-gray-700 text-gray-400 text-xs uppercase font-bold">Select a country</div>
-                <div id="country-list" class="py-1"></div>
+                <div id="country-list" class="py-1 cursor-pointer"></div>
             </div>
         </div>
       </div>
@@ -73,7 +73,7 @@ export async function initChartPage() {
 
     if (countryListEl) {
       countryListEl.innerHTML = countries.map(c => `
-          <button class="country-option w-full text-left px-4 py-3 hover:bg-gray-700 flex items-center justify-between group" data-code="${c.code}" data-name="${c.name}">
+          <button class="country-option w-full text-left px-4 py-3 hover:bg-gray-800 flex items-center justify-between group cursor-pointer" data-code="${c.code}" data-name="${c.name}">
               <span class="text-white font-medium">${c.name}</span>
               ${c.code === currentCountryCode ? '<span class="text-white check-mark">✓</span>' : '<span class="text-white check-mark hidden">✓</span>'}
           </button>
@@ -148,20 +148,20 @@ function renderVideoCharts(data, container) {
 function renderTopArtists(data, container) {
   if (!container) return;
   const items = data.items || [];
-  const ITEMS_PER_PAGE = 12;
-  const pages = Math.ceil(items.length / ITEMS_PER_PAGE);
+  const itemsPages = 12;
+  const pages = Math.ceil(items.length / itemsPages);
   let html = "";
 
   for (let i = 0; i < pages; i++) {
-    const start = i * ITEMS_PER_PAGE;
-    const pageItems = items.slice(start, start + ITEMS_PER_PAGE);
+    const start = i * itemsPages;
+    const pageItems = items.slice(start, start + itemsPages);
     html += `
       <div class="min-w-full flex-shrink-0 pr-6">
           <div class="grid grid-rows-4 grid-flow-col gap-x-8 gap-y-4">
               ${pageItems.map(artist => {
-                let trendIcon = '<span class="w-2 h-2 bg-gray-500 rounded-full ml-2"></span>';
-                if (artist.trend === 'up') trendIcon = '<span class="text-green-500 ml-2 text-xs">▲</span>';
-                else if (artist.trend === 'down') trendIcon = '<span class="text-red-500 ml-2 text-xs">▼</span>';
+                let trendIcon = '<span class="w-2 h-2 bg-gray-500 rounded-full"></span>';
+                if (artist.trend === 'up') trendIcon = '<span class="text-green-500 text-xs">▲</span>';
+                else if (artist.trend === 'down') trendIcon = '<span class="text-red-500 text-xs">▼</span>';
                 const fakeThumb = `https://ui-avatars.com/api/?name=${encodeURIComponent(artist.name)}&background=random&color=fff&size=100`;
                 return `
                   <div class="flex items-center gap-4 w-64 group cursor-pointer p-2 rounded hover:bg-gray-800 transition-colors">

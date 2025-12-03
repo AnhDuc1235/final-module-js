@@ -45,7 +45,7 @@ export function renderMoodsAndGenres(list = []) {
         ${cols.map(col => `
             <div class="flex flex-col gap-3 w-[180px]">
               ${col.map(item => `
-                  <button class="mood-btn bg-gray-900 hover:bg-gray-800 rounded-r-lg rounded-l-sm px-4 py-3 text-left text-white text-sm truncate border-l-[6px] transition-all hover:pl-5"
+                  <button class="mood-btn bg-gray-900 hover:bg-gray-800 rounded-r-lg rounded-l-sm px-4 py-3 text-left text-white text-sm truncate border-l-[6px] transition-all cursor-pointer"
                     style="border-left-color: ${item.color || '#fff'};"
                     data-slug="${item.slug}"
                     data-type="${item.type}"> ${item.name}
@@ -60,8 +60,8 @@ export function renderMoodsAndGenres(list = []) {
       <div class="flex justify-between items-center mb-4">
         <p id="moods-title-link" class="text-white text-2xl font-bold cursor-pointer">Moods & genres</p>
         <div class="flex gap-2">
-          <button id="mood-prev" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30"><</button>
-          <button id="mood-next" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30">></button>
+          <button id="mood-prev" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30 cursor-pointer"><</button>
+          <button id="mood-next" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30 cursor-pointer">></button>
         </div>
       </div>
       <div class="overflow-hidden">
@@ -96,8 +96,8 @@ export function renderNewMusicVideos(list) {
       <div class="flex justify-between items-center mb-4">
         <p id="videos-title-link" class="text-white text-2xl font-bold cursor-pointer hover:text-gray-300 transition-colors">New music videos</p>
         <div class="flex gap-2">
-            <button id="video-prev" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30"><</button>
-            <button id="video-next" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30">></button>
+            <button id="video-prev" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30 cursor-pointer"><</button>
+            <button id="video-next" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30 cursor-pointer">></button>
         </div>
       </div>
       <div class="overflow-hidden">

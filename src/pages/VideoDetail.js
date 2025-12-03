@@ -44,7 +44,7 @@ export const VideoDetailPageHTML = () => `
 
         <div class="flex-1 min-w-0">
              <p class="text-white mb-4 ml-3.5 text-2xl">Related Videos</p>
-             <div class="overflow-y-auto max-h-[calc(100vh-200px)] scrollbar-thin">
+             <div>
                  <table class="w-full text-left border-collapse">
                     <tbody id="video-related-tracks"></tbody>
                  </table>
@@ -170,7 +170,7 @@ export const initVideoDetailLogic = async (id) => {
     function renderList(items, activeId) {
         listContainer.innerHTML = items.map((item, index) => `
             <tr class="group hover:bg-[#2a2a2a] rounded-md transition-colors cursor-pointer js-video-item ${item.id === activeId ? 'bg-[#2a2a2a]' : ''}" data-id="${item.id}">
-                <td class="p-3 text-gray-400 w-10 text-center">${index + 1}</td>
+                <td class="p-3 text-gray-400 w-10 text-center group-hover:text-white">${index + 1}</td>
                 <td class="p-3 flex gap-4">
                     <img src="${item.thumbnails[0]}" class="w-24 h-14 rounded object-cover">
                     <div><h4 class="text-white font-medium text-sm line-clamp-2">${item.title}</h4></div>

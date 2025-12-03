@@ -1,6 +1,32 @@
 import Header from "../components/Header.js";
 import Sidebar from "../components/sidebar.js";
 
+document.addEventListener('click', (e) => {
+    const item = e.target.closest('.js-search-item');
+    if (item) {
+        e.preventDefault();
+        const id = item.dataset.id;
+        const type = item.dataset.type;
+
+        let url = '';
+        let state = {};
+
+        if (type === 'album' || type === 'playlist') {
+            url = `/?page=detail&slug=${id}&type=${type}`;
+            state = { page: 'detail', slug: id, type: type };
+        } else if (type === 'video') {
+            url = `/?page=video&id=${id}`;
+            state = { page: 'video', id: id };
+        } else {
+            url = `/?page=song&id=${id}`;
+            state = { page: 'song', id: id };
+        }
+
+        window.history.pushState(state, "", url);
+        window.dispatchEvent(new Event("popstate"));
+    }
+});
+
 //chuyển đổi giây sang phút:giây
 const formatTime = (seconds) => {
     if (!seconds) return '00:00';
@@ -30,9 +56,11 @@ const SearchPage = async (user) => {
                     const name = song.title || 'Không tên';
                     const artist = song.artists && song.artists.length > 0 ? song.artists[0].name : song.subtitle || '';
                     const time = formatTime(song.duration);
+                    const id = song.encodeId || song.id;
+                    const type = song.type || 'song';
 
                     return `
-                        <div class="flex items-center justify-between pb-3 hover:bg-[#FFFFFF1A] rounded-md cursor-pointer group border-b border-[#FFFFFF0D]">
+                        <div class="flex items-center justify-between pb-3 hover:bg-[#FFFFFF1A] rounded-md cursor-pointer group border-b border-[#FFFFFF0D] js-search-item" data-id="${id}" data-type="${type}">
                             <div class="flex items-center flex-1 overflow-hidden">
                                 <div class="relative w-[50px] h-[50px] mr-4 rounded-md overflow-hidden flex-shrink-0">
                                     <img src="${img}" class="w-full h-full">
@@ -67,13 +95,13 @@ const SearchPage = async (user) => {
             }
         } catch (error) {
             console.error(error);
-            mainContent = `<div class="text-red-500 text-center mt-20">Lỗi</div>`;
+            mainContent = `<div class="text-white text-2xl">Lỗi</div>`;
         }
     }
 
     //giao diện
     return `
-    <div class="flex h-screen bg-black overflow-hidden">
+    <div class="flex h-screen bg-black overflow-hidden mt-[60px]">
         <div class="w-[240px] border-[#333]">
             ${Sidebar()}
         </div>

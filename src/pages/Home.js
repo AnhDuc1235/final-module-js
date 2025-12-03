@@ -97,7 +97,7 @@ function renderMoods(items) {
     if (!items || !items.length) return "";
     
     const buttonsHtml = items.map(i => {
-        return `<button class="bg-[#212121] px-4 py-2 rounded-lg text-white text-sm font-medium">${i.name || i.title}</button>`;
+        return `<button class="bg-[#212121] px-4 py-2 rounded-lg text-white text-sm font-medium cursor-pointer hover:bg-gray-800 transition-all">${i.name || i.title}</button>`;
     }).join("");
 
     return `
@@ -151,9 +151,12 @@ function renderSectionSlider(title, items, defaultType, sliderId) {
     const itemsHtml = items.map(item => `
         <div class="js-navigate-detail w-[180px] md:w-[200px] flex-shrink-0 cursor-pointer group" data-slug="${item.slug}" data-type="${item.type || defaultType}">
             <div class="relative mb-3 overflow-hidden rounded-lg">
-                <img src="${getThumb(item)}" class="w-full aspect-square object-cover">
-                <div class="absolute inset-0 bg-black/40 hidden group-hover:flex items-center justify-center transition-all">
-                </div>
+                <img src="${getThumb(item)}" class="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-500">
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <i class="fas fa-play text-white text-2xl"></i>
+                
+            </div>
+            
             </div>
             <h3 class="text-white font-semibold truncate text-base">${item.title}</h3>
             <p class="text-gray-400 text-sm truncate mt-1">${getArtistName(item)}</p>
@@ -165,14 +168,15 @@ function renderSectionSlider(title, items, defaultType, sliderId) {
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-white text-2xl font-bold">${title}</h2>
                 <div class="flex gap-2">
-                    <button id="${sliderId}-prev" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30"><</button>
-                    <button id="${sliderId}-next" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30">></button>
+                    <button id="${sliderId}-prev" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30 cursor-pointer"><</button>
+                    <button id="${sliderId}-next" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30 cursor-pointer">></button>
                 </div>
             </div>
             <div class="overflow-hidden">
                 <div id="${sliderId}" class="flex gap-6 transition-transform duration-300 ease-out">
                     ${itemsHtml}
                 </div>
+                
             </div>
         </section>
     `;
@@ -239,9 +243,7 @@ export async function initHomeLogic() {
 
             const getItems = (r) => r.items || (Array.isArray(r) ? r : r.data) || [];
 
-            //giao diện
             let html = "";
-
             //moods
             html += renderMoods(getItems(moods));
             
@@ -307,19 +309,16 @@ export async function initHomeLogic() {
         if (page === "detail" && slug) {
             //chi tiết Playlist/Album
             mainView.innerHTML = DetailPageHTML();
-            mainView.scrollTo(0, 0);
             await initDetailLogic(slug, type);
         } 
         else if (page === "song" && id) {
             //nghe nhạc
             mainView.innerHTML = SongDetailPageHTML();
-            mainView.scrollTo(0, 0);
             await initSongDetailLogic(id);
         }
         else if (page === "video" && id) {
             //video
             mainView.innerHTML = VideoDetailPageHTML();
-            mainView.scrollTo(0, 0);
             await initVideoDetailLogic(id);
         }
         else {

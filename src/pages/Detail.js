@@ -17,7 +17,7 @@ export const DetailPageHTML = () => `
             <p id="detail-desc" class="text-gray-400 text-sm mb-4 line-clamp-3"></p>
             <p id="detail-count" class="text-gray-400 text-sm font-bold"></p>
             
-            <button class="mt-6 bg-white text-black font-bold px-8 py-3 rounded-full hover:scale-105 transition-transform">
+            <button class="mt-6 bg-white text-black font-bold px-8 py-3 rounded-full hover:bg-gray-200 transition-all cursor-pointer">
                 Play all
             </button>
         </div>
@@ -69,7 +69,7 @@ export const initDetailLogic = async (param, type) => {
                 return `
                 <tr class="group hover:bg-[#2a2a2a] rounded-md transition-colors cursor-pointer js-navigate-song" data-id="${id}">
                     <td class="p-3 text-gray-400 w-10 text-center rounded-l-md group-hover:text-white">
-                        <span class="group-hover:hidden">${index + 1}</span>
+                        <span>${index + 1}</span>
                     </td>
                     <td class="p-3">
                         <div class="flex items-center gap-4">

@@ -1,5 +1,7 @@
 const API_BASE_URL = "https://youtube-music.f8team.dev/api";
 
+let sliderQueue = [];
+
 export default function MoodDetailPage() {
   return `
     <div class="pb-32 min-h-screen bg-black text-white animate-fade-in">
@@ -15,6 +17,8 @@ export async function initMoodDetail(slug, type) {
   const titleEl = document.getElementById("mood-title");
 
   if (!container) return;
+  
+  sliderQueue = [];
 
   try {
     let sectionsHTML = "";
@@ -54,15 +58,16 @@ export async function initMoodDetail(slug, type) {
     }
 
     if (!sectionsHTML) {
-      container.innerHTML = `<p class="text-gray-400">Không có dữ liệu cho mục này.</p>`;
+      container.innerHTML = `<p class="text-white text-2xl">Không có dữ liệu</p>`;
     } else {
       container.innerHTML = sectionsHTML;
+      sliderQueue.forEach(s => setupSlider(s.sliderId, s.prevId, s.nextId, s.width));
       attachClickEvents();
     }
 
   } catch (error) {
     console.error("Mood Error:", error);
-    container.innerHTML = `<p class="text-red-500">Lỗi tải dữ liệu. Vui lòng thử lại.</p>`;
+    container.innerHTML = `<p class="text-white text-2xl">Lỗi dữ liệu</p>`;
   }
 }
 
@@ -93,6 +98,18 @@ function getArtists(item) {
 function renderSection(title, items, type) {
     if (!items || items.length === 0) return "";
 
+    const uniqueId = Math.random().toString(36).substr(2, 9);
+    const sliderId = `slider-${uniqueId}`;
+    const prevId = `prev-${uniqueId}`;
+    const nextId = `next-${uniqueId}`;
+
+    sliderQueue.push({
+        sliderId: sliderId,
+        prevId: prevId,
+        nextId: nextId,
+        width: 216 
+    });
+
     const itemsHTML = items.map(item => {
         const id = item.id || item._id || ""; 
         const slug = item.slug || "";
@@ -102,7 +119,7 @@ function renderSection(title, items, type) {
         const desc = getArtists(item);
 
         return `
-            <div class="js-navigate-item min-w-[160px] w-[160px] md:min-w-[200px] md:w-[200px] cursor-pointer group" 
+            <div class="js-navigate-item min-w-[160px] w-[160px] md:min-w-[200px] md:w-[200px] cursor-pointer group flex-shrink-0" 
                  data-type="${type}" 
                  data-id="${id}" 
                  data-slug="${slug}">
@@ -122,12 +139,54 @@ function renderSection(title, items, type) {
 
     return `
         <section>
-            <h2 class="text-xl font-bold text-white mb-4">${title}</h2>
-            <div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                ${itemsHTML}
+            <div class="flex justify-between items-center mb-4">
+                 <h2 class="text-xl font-bold text-white">${title}</h2>
+                 <div class="flex gap-2">
+                    <button id="${prevId}" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30"><</button>
+                    <button id="${nextId}" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30">></button>
+                </div>
+            </div>
+            <div class="overflow-hidden">
+                <div id="${sliderId}" class="flex gap-4 transition-transform duration-300 min-h-[200px] items-center">
+                    ${itemsHTML}
+                </div>
             </div>
         </section>
     `;
+}
+
+function setupSlider(sliderId, prevId, nextId, itemWidth) {
+    const slider = document.getElementById(sliderId);
+    const prev = document.getElementById(prevId);
+    const next = document.getElementById(nextId);
+    if (!slider || !prev || !next) return;
+
+    let current = 0;
+    const newPrev = prev.cloneNode(true);
+    const newNext = next.cloneNode(true);
+    prev.parentNode.replaceChild(newPrev, prev);
+    next.parentNode.replaceChild(newNext, next);
+
+    const update = () => {
+        if(!slider.parentElement) return;
+        const containerWidth = slider.parentElement.offsetWidth;
+        const visibleItems = Math.floor(containerWidth / itemWidth);
+        const maxIndex = Math.max(0, slider.children.length - visibleItems);
+        if (current > maxIndex) current = maxIndex;
+        if (current < 0) current = 0;
+        
+        slider.style.transform = `translateX(-${current * itemWidth}px)`;
+        newPrev.disabled = current === 0;
+        newNext.disabled = current >= maxIndex;
+        newPrev.style.opacity = current === 0 ? "0.3" : "1";
+        newNext.style.opacity = current >= maxIndex ? "0.3" : "1";
+    }
+    newPrev.addEventListener('click', () => { if (current > 0) { current--; update(); }});
+    newNext.addEventListener('click', () => { current++; update(); });
+    const resizeObserver = new ResizeObserver(() => update());
+    resizeObserver.observe(slider.parentElement);
+    
+    update();
 }
 
 function attachClickEvents() {

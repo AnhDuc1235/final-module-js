@@ -11,8 +11,8 @@ export default function NewReleasePage() {
         <div class="flex justify-between items-center mb-4">
              <h2 class="text-white text-xl font-bold">Top Albums</h2>
              <div class="flex gap-2">
-                <button id="nr-prev" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30">⟨</button>
-                <button id="nr-next" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30">⟩</button>
+                <button id="nr-prev" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30 cursor-pointer"><</button>
+                <button id="nr-next" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30 cursor-pointer">></button>
             </div>
         </div>
         <div class="overflow-hidden">
@@ -26,8 +26,8 @@ export default function NewReleasePage() {
         <div class="flex justify-between items-center mb-4">
           <p class="text-white text-2xl font-bold">Music videos</p>
           <div class="flex gap-2">
-              <button id="mv-prev" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30">⟨</button>
-              <button id="mv-next" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30">⟩</button>
+              <button id="mv-prev" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30 cursor-pointer"><</button>
+              <button id="mv-next" class="text-white text-xl px-3 py-1 hover:bg-gray-800 rounded-full disabled:opacity-30 cursor-pointer">></button>
           </div>
         </div>
         <div class="overflow-hidden">
@@ -72,7 +72,7 @@ export async function initNewReleaseData() {
                           </div>
                     </div>
                  </div>
-                 <p class="text-white font-bold text-base truncate leading-tight">${item.title || item.name}</p>
+                 <p class="text-white font-bold text-base leading-tight">${item.title || item.name}</p>
                  <p class="text-gray-400 text-sm mt-1">${item.albumType || 'Album'}</p>
                 </div>
             `).join("");

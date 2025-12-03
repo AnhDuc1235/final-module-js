@@ -128,7 +128,7 @@ export const initSongDetailLogic = async (initialId) => {
             return `
             <tr class="group hover:bg-[#2a2a2a] rounded-md transition-colors cursor-pointer js-play-item ${isActive ? 'bg-[#2a2a2a]' : ''}" 
                 data-id="${track.id}">
-                <td class="p-3 text-gray-400 w-10 text-center rounded-l-md">
+                <td class="p-3 text-gray-400 w-10 text-center rounded-l-md group-hover:text-white">
                     ${index + 1}
                 </td>
                 <td class="p-3">
