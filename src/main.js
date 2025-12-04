@@ -44,18 +44,31 @@ const attachSidebarEvents = () => {
 };
 
 const updateSidebarUI = () => {
-    const items = document.querySelectorAll('.js-home, .js-explore, .js-library, .js-signin');
-    const signinFull = document.querySelector('.js-signin-full');
+    const sidebar = document.querySelector(".js-sidebar");
+    const items = document.querySelectorAll(".js-home, .js-explore, .js-library, .js-signin");
+    const signinFull = document.querySelector(".js-signin-full");
+    const signinSmall = document.querySelector(".js-signin");
 
-    if (signinFull) signinFull.classList.toggle('hidden', isSidebarCollapsed);
-
+    if (sidebar) {
+        sidebar.classList.toggle("w-[170px]", !isSidebarCollapsed);
+        sidebar.classList.toggle("w-[60px]", isSidebarCollapsed);
+    }
+    if (signinFull) signinFull.classList.toggle("hidden", isSidebarCollapsed);
+    if (signinSmall) signinSmall.classList.toggle("hidden", !isSidebarCollapsed);
     items.forEach(i => {
+        const textLink = i.querySelector("a");
+
+        i.classList.remove("p-[10px]", "pr-[12px]", "pl-[22px]", "px-[8px]");
+        i.classList.remove("pb-[10px]", "pt-[10px]");
+        i.classList.add("py-[10px]");
         if (!isSidebarCollapsed) {
-            i.classList.remove('flex-col', 'w-[60px]', 'text-center');
-            i.classList.add('flex-row', 'w-[170px]', 'justify-start', 'ml-[11px]');
+            i.classList.remove("flex-col", "w-[60px]", "text-center", "items-center");
+            i.classList.add("flex-row", "w-[170px]", "justify-start", "pl-[22px]");
+            if (textLink) textLink.classList.remove("hidden");
         } else {
-            i.classList.remove('flex-row', 'w-[170px]', 'justify-start', 'ml-[11px]');
-            i.classList.add('flex-col', 'w-[60px]', 'text-center');
+            i.classList.remove("flex-row", "w-[170px]", "justify-start");
+            i.classList.add("flex-col", "w-[60px]", "text-center", "items-center", "px-[8px]");
+            if (textLink) textLink.classList.remove("hidden");
         }
     });
 };

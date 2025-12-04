@@ -72,7 +72,7 @@ export const initSongDetailLogic = async (initialId) => {
 
             //cột trái
             const title = data.title;
-            const artist = Array.isArray(data.artists) ? data.artists.join(", ") : "null";
+            const artist = Array.isArray(data.artists) ? data.artists.join(", ") : "null"; //lưu ý
             const thumb = data.thumbnails?.[0];
 
             pageTitle.innerText = title;

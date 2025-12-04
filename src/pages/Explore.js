@@ -249,35 +249,30 @@ export const initExploreLogic = () => {
         initVideoSlider();
         attachMoodClickEvents('.mood-btn');
         
-        document.getElementById("nav-new-releases").onclick = (e) => {
-            e.preventDefault();
-            window.history.pushState({ page: "new-releases" }, "", "?page=new-releases");
-            handleRouting(); 
-        };
-
-        document.getElementById("nav-charts").onclick = (e) => {
-            e.preventDefault();
-            window.history.pushState({ page: "charts" }, "", "?page=charts");
-            handleRouting(); 
-        };
-
-        document.getElementById("nav-moods").onclick = (e) => {
-            e.preventDefault();
-            window.history.pushState({ page: "moods" }, "", "?page=moods");
-            handleRouting(); 
-        };
-
+        const navNewReleases = document.getElementById("nav-new-releases");
+        if(navNewReleases) {
+          navNewReleases.onclick = (e) => { showNewReleasesPage(); };
+        }
+        
+        const navCharts = document.getElementById("nav-charts");
+        if(navCharts) {
+          navCharts.onclick = (e) => { showChartPage(); };
+        }
+        
+        const navMoods = document.getElementById("nav-moods");
+        if(navMoods) {
+          navMoods.onclick = (e) => { showMoods(); };
+        }
+        
         const moodTitle = document.getElementById("moods-title-link");
-        if(moodTitle) moodTitle.onclick = () => {
-             window.history.pushState({ page: "moods" }, "", "?page=moods");
-             handleRouting();
-        };
+        if(moodTitle) {
+          moodTitle.onclick = (e) => { showMoods(); };
+        }
+        
         const videoTitle = document.getElementById("videos-title-link");
-        if(videoTitle) videoTitle.onclick = () => {
-             window.history.pushState({ page: "videos" }, "", "?page=videos");
-             handleRouting();
-        };
-
+        if(videoTitle) {
+          videoTitle.onclick = (e) => { showVideos(); };
+        }
     } catch (error) {
         console.error(error);
         root.innerHTML = `<p class="text-white text-center mt-10">Lỗi tải dữ liệu</p>`;
