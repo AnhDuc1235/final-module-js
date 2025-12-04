@@ -12,7 +12,8 @@ let currentSearch = null;
 let isSidebarCollapsed = false;
 
 const navigateTo = (path) => {
-    window.history.pushState({}, "", path);
+    const clean = path.split("?")[0];
+    window.history.pushState({}, "", clean);
     window.dispatchEvent(new Event('popstate'));
 };
 
@@ -21,7 +22,11 @@ const attachSidebarEvents = () => {
     homeBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault(); 
-            if (window.location.pathname !== '/') navigateTo('/');
+            if (window.location.pathname !== '/' || window.location.search !== '') {
+            const newUrl = '/';
+            window.history.replaceState({}, "", newUrl);
+            window.dispatchEvent(new Event('popstate'));
+        }
         });
     });
 
